@@ -1,0 +1,182 @@
+# ==========================================================
+# Mediante el desarrollo de un sistema que permite organizary administrar eficientemente las actividades asignadas a cada persona dentro de una empresa o proyecto; para ello, el sistema
+# estará estructurado con dos menús principales: uno denominado “Menú Usuario” que permitirá gestionar la información básica de
+# cada usuario (nombre, identificación, contacto y rol) a través de operaciones CRUD (crear, consultar, actualizar y eliminar),
+# y otro llamado “Menú Tareas”, desde el cual se podrán administrar
+# las tareas asignadas a cada usuario, también mediante operaciones
+# CRUD, facilitando el registro de nuevas tareas, su consulta
+# individual o filtrada por estado (por ejemplo, tareas pendientes
+# o completadas), modificación y eliminación; además, se incorporarán
+# submenús dentro de cada menú principal para acceder de manera sencilla
+# a las opciones específicas de gestión y, para un funcionamiento eficiente,
+# el sistema debe validar condicionalmente que un usuario exista antes de
+# asignar tareas y permitir acciones solo si cumplen ciertos criterios,
+# utilizando bucles para recorrer listas de usuarios y tareas, emitir
+# reportes como el listado de tareas de un usuario o el total de tareas
+# por estado, y garantizando así una gestión organizada y dinámica del
+# control de actividades.
+#
+# Criterios de evaluación:
+# - el código debe ser modular uso de funciones
+# - uso de estructuras anidadas con el fin de respetar la integridad de los datos
+# - uso de diferentes estructuras de datos (listas, tuplas y diccionarios)
+# ==========================================================
+
+# Aquí defino un diccionario para los usuarios.
+# Uso un diccionario porque quiero acceder rápido a cada usuario por su ID.
+# Cada valor lo guardo como una TUPLA (nombre, apellido, correo, rol),
+# ya que son datos básicos que no necesito modificar campo por campo.
+usuarios = {}
+
+# Aquí defino otro diccionario para las tareas.
+# La clave es el id_usuario y el valor es una LISTA de tareas.
+# Cada tarea la represento como un DICCIONARIO con campos clave-valor.
+# Esto me permite tener estructuras anidadas: diccionario -> lista -> diccionario.
+tareas = {}
+
+# --------------------------
+# Funciones de Usuarios
+# --------------------------
+def crear_usuario():
+    # Estoy usando funciones para modularidad, cumpliendo el criterio del taller.
+    id_usuario = input("Ingrese ID del usuario: ")
+    if id_usuario in usuarios:
+        print("⚠️ Ya existe un usuario con ese ID.")
+        return
+    nombre = input("Nombre: ")
+    apellido = input("Apellido: ")
+    correo = input("Correo: ")
+    rol = input("Rol: ")
+    usuarios[id_usuario] = (nombre, apellido, correo, rol)
+    # Aquí guardo los datos en una TUPLA dentro del diccionario de usuarios.
+    print("✅ Usuario creado con éxito.")
+
+def consultar_usuarios():
+    if not usuarios:
+        print("⚠️ No hay usuarios registrados.")
+        return
+    for uid, datos in usuarios.items():
+        # Aquí recorro el diccionario con un bucle for.
+        # Accedo a la tupla por índices.
+        print(f"ID: {uid} | Nombre: {datos[0]} {datos[1]} | Correo: {datos[2]} | Rol: {datos[3]}")
+
+def actualizar_usuario():
+    id_usuario = input("Ingrese ID del usuario a actualizar: ")
+    if id_usuario not in usuarios:
+        print("⚠️ Usuario no encontrado.")
+        return
+    nombre = input("Nuevo nombre: ")
+    apellido = input("Nuevo apellido: ")
+    correo = input("Nuevo correo: ")
+    rol = input("Nuevo rol: ")
+    usuarios[id_usuario] = (nombre, apellido, correo, rol)
+    # Reemplazo la tupla completa, porque las tuplas son inmutables.
+    print("✅ Usuario actualizado.")
+
+def eliminar_usuario():
+    id_usuario = input("Ingrese ID del usuario a eliminar: ")
+    if id_usuario in usuarios:
+        usuarios.pop(id_usuario)
+        # También elimino sus tareas para mantener integridad de datos.
+        tareas.pop(id_usuario, None)
+        print("✅ Usuario eliminado.")
+    else:
+        print("⚠️ Usuario no encontrado.")
+
+# --------------------------
+# Funciones de Tareas
+# --------------------------
+def crear_tarea():
+    id_usuario = input("Ingrese ID del usuario: ")
+    if id_usuario not in usuarios:
+        # Aquí valido que no se puedan asignar tareas a usuarios inexistentes.
+        print("⚠️ No existe ese usuario, primero créalo.")
+        return
+    descripcion = input("Descripción de la tarea: ")
+    estado = input("Estado (pendiente/completada): ")
+    fecha = input("Fecha límite (YYYY-MM-DD): ")
+    tarea = {"descripcion": descripcion, "estado": estado, "fecha": fecha}
+    # Cada tarea es un DICCIONARIO dentro de una LISTA asociada al usuario.
+    tareas.setdefault(id_usuario, []).append(tarea)
+    print("✅ Tarea creada con éxito.")
+
+def consultar_tareas():
+    id_usuario = input("Ingrese ID del usuario: ")
+    if id_usuario not in usuarios:
+        print("⚠️ Usuario no encontrado.")
+        return
+    if id_usuario not in tareas or not tareas[id_usuario]:
+        print("⚠️ Este usuario no tiene tareas.")
+        return
+    for i, tarea in enumerate(tareas[id_usuario], 1):
+        # Aquí recorro la LISTA de tareas con un bucle for.
+        print(f"{i}. {tarea['descripcion']} | Estado: {tarea['estado']} | Fecha: {tarea['fecha']}")
+
+def eliminar_tarea():
+    id_usuario = input("Ingrese ID del usuario: ")
+    if id_usuario not in usuarios or id_usuario not in tareas:
+        print("⚠️ Usuario o tareas no encontradas.")
+        return
+    consultar_tareas()
+    num = int(input("Número de tarea a eliminar: ")) - 1
+    if 0 <= num < len(tareas[id_usuario]):
+        tareas[id_usuario].pop(num)
+        # Aquí elimino un elemento de la LISTA de tareas.
+        print("✅ Tarea eliminada.")
+    else:
+        print("⚠️ Número inválido.")
+
+# --------------------------
+# Menús
+# --------------------------
+def menu_usuarios():
+    # Aquí creo un submenú para gestionar usuarios.
+    while True:
+        print("\n--- Menú Usuarios ---")
+        print("1. Crear usuario")
+        print("2. Consultar usuarios")
+        print("3. Actualizar usuario")
+        print("4. Eliminar usuario")
+        print("5. Volver al menú principal")
+        opcion = input("Seleccione: ")
+        if opcion == "1": crear_usuario()
+        elif opcion == "2": consultar_usuarios()
+        elif opcion == "3": actualizar_usuario()
+        elif opcion == "4": eliminar_usuario()
+        elif opcion == "5": break
+        else: print("⚠️ Opción inválida.")
+
+def menu_tareas():
+    # Aquí creo un submenú para gestionar tareas.
+    while True:
+        print("\n--- Menú Tareas ---")
+        print("1. Crear tarea")
+        print("2. Consultar tareas")
+        print("3. Eliminar tarea")
+        print("4. Volver al menú principal")
+        opcion = input("Seleccione: ")
+        if opcion == "1": crear_tarea()
+        elif opcion == "2": consultar_tareas()
+        elif opcion == "3": eliminar_tarea()
+        elif opcion == "4": break
+        else: print("⚠️ Opción inválida.")
+
+def menu_principal():
+    # Este es el menú principal que conecta todo el sistema.
+    while True:
+        print("\n=== Sistema de Control de Tareas ===")
+        print("1. Menú Usuarios")
+        print("2. Menú Tareas")
+        print("3. Salir")
+        opcion = input("Seleccione: ")
+        if opcion == "1": menu_usuarios()
+        elif opcion == "2": menu_tareas()
+        elif opcion == "3":
+            print("👋 Saliendo del sistema...")
+            break
+        else: print("⚠️ Opción inválida.")
+
+# --------------------------
+# Programa principal
+# --------------------------
+menu_principal()
